@@ -7,7 +7,7 @@ A production-ready full-stack notes application with multi-user collaboration, r
 ##  Live Demo
 
 - **Backend API:** https://notescraft-2n7v.onrender.com
-- **Frontend:** [notescraft-ehoe6v8ft-uttkarsh-marwah-s-projects.vercel.app](https://notescraft-ehoe6v8ft-uttkarsh-marwah-s-projects.vercel.app/)
+- **Frontend:** [notescraft-jet.vercel.app](notescraft-jet.vercel.app)
 
 ---
 
