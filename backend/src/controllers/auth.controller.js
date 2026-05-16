@@ -45,7 +45,7 @@ const login = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const access_token = signToken(user.id);
+    const access_token = signToken(user.id, user.email);
 
     return res.status(200).json({ access_token });
   } catch (err) {

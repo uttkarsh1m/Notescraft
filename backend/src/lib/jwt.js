@@ -8,12 +8,13 @@ if (!SECRET) {
 }
 
 /**
- * Sign a JWT token for a given user id
+ * Sign a JWT token for a given user id and email
  * @param {string} userId
+ * @param {string} email
  * @returns {string} signed JWT
  */
-const signToken = (userId) => {
-  return jwt.sign({ sub: userId }, SECRET, { expiresIn: EXPIRES_IN });
+const signToken = (userId, email) => {
+  return jwt.sign({ sub: userId, email }, SECRET, { expiresIn: EXPIRES_IN });
 };
 
 /**

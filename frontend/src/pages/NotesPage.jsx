@@ -4,9 +4,11 @@ import toast from "react-hot-toast";
 import NoteCard from "../components/NoteCard";
 import NoteModal from "../components/NoteModal";
 import ShareModal from "../components/ShareModal";
+import { useAuth } from "../context/AuthContext";
 import { Plus, Search, X } from "lucide-react";
 
 export default function NotesPage() {
+  const { currentUser } = useAuth();
   const [notes, setNotes] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
@@ -164,6 +166,7 @@ export default function NotesPage() {
             <NoteCard
               key={note.id}
               note={note}
+              isOwner={note.owner?.id === currentUser?.id}
               onEdit={openEdit}
               onDelete={handleDelete}
               onShare={setSharingNote}
@@ -180,11 +183,10 @@ export default function NotesPage() {
             <button
               key={p}
               onClick={() => fetchNotes(p)}
-              className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-                p === pagination.page
-                  ? "bg-brand-600 text-white"
-                  : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-              }`}
+              className={`w-8 h-8 rounded-lg text-sm font-medium transition ${p === pagination.page
+                ? "bg-brand-600 text-white"
+                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
             >
               {p}
             </button>

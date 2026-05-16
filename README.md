@@ -1,13 +1,53 @@
-# Notes App
+#  NotesCraft — Full Stack Notes App
 
-A full-stack multi-user notes service — think Google Keep with a REST API.
-
-**Backend:** Node.js + Express + PostgreSQL + Prisma + JWT  
-**Frontend:** React + Vite + TailwindCSS
+A production-ready full-stack notes application with multi-user collaboration, role-based access control, and advanced features like tagging, search, and automatic data lifecycle management.
 
 ---
 
-## Project Structure
+##  Live Demo
+
+- **Backend API:** https://notescraft-2n7v.onrender.com
+- **Frontend:** [notescraft-ehoe6v8ft-uttkarsh-marwah-s-projects.vercel.app](https://notescraft-ehoe6v8ft-uttkarsh-marwah-s-projects.vercel.app/)
+
+---
+
+##  Key Features
+
+- JWT-based Authentication
+- Multi-user Notes with Sharing
+- Role-based Access Control (Owner vs Shared User)
+- Pin Important Notes
+- Tag-based Filtering
+- Full-text Search
+- Intelligent Trash with 30-day Auto Cleanup
+- Pagination for Scalable APIs
+- Dockerized Full Stack
+
+---
+
+##  Architecture
+
+```
+Frontend (Vercel)
+       ↓
+Backend (Render)
+       ↓
+PostgreSQL (Render DB)
+```
+
+---
+
+##  Design Decisions
+
+- Only owners can edit/delete notes to prevent accidental data loss
+- Shared users have read-only access to maintain data integrity
+- Soft delete with 30-day retention improves user safety
+- Prisma ORM ensures type-safe and scalable database operations
+- Pagination and rate limiting improve performance and reliability
+
+---
+
+##  Project Structure
 
 ```
 notes-app/
@@ -64,30 +104,27 @@ notes-app/
 
 ---
 
-## Local Development (macOS)
+## Local Development(macOS)
 
-### 1. PostgreSQL setup
+### PostgreSQL Setup
 
 ```bash
-# Install (skip if already installed)
 brew install postgresql@16
-
-# Start the service
 brew services start postgresql@16
-
-# Create the user and database
 psql postgres -c "CREATE USER notesuser WITH PASSWORD 'notespassword';"
 psql postgres -c "CREATE DATABASE notesdb OWNER notesuser;"
 psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE notesdb TO notesuser;"
-psql postgres -c "ALTER USER notesuser CREATEDB;"   # required by Prisma for shadow DB
+psql postgres -c "ALTER USER notesuser CREATEDB;"
 ```
 
-### 2. Backend
+### Backend Setup
 
 ```bash
-cd notes-app/backend
+cd backend
 npm install
 cp .env.example .env
+npx prisma migrate dev --name init
+npm run dev
 ```
 
 `.env` values:
@@ -95,26 +132,18 @@ cp .env.example .env
 | Variable | Default | Description |
 |---|---|---|
 | `DATABASE_URL` | `postgresql://notesuser:notespassword@localhost:5432/notesdb` | Postgres connection string |
-| `JWT_SECRET` | *(set a strong random string in production)* | Signs JWT tokens |
+| `JWT_SECRET` | *(strong random string)* | Signs JWT tokens |
 | `JWT_EXPIRES_IN` | `24h` | Token lifetime |
 | `PORT` | `3000` | Server port |
 | `AUTHOR_NAME` | `Your Name` | Returned by `GET /about` |
 | `AUTHOR_EMAIL` | `your@email.com` | Returned by `GET /about` |
 
-```bash
-# Create all tables
-npx prisma migrate dev --name init
-
-# Start dev server with hot reload
-npm run dev
-```
-
 API is now live at **http://localhost:3000**
 
-### 3. Frontend
+### Frontend Setup
 
 ```bash
-cd notes-app/frontend
+cd frontend
 npm install
 npm run dev
 ```
@@ -126,12 +155,11 @@ Frontend is now live at **http://localhost:5173**
 
 ---
 
-## Quick Start (Docker)
+##  Quick Start with Docker
 
 Runs the full stack — PostgreSQL + backend + frontend — with one command:
 
 ```bash
-cd notes-app
 cp backend/.env.example backend/.env
 docker-compose up --build
 ```
@@ -141,6 +169,34 @@ docker-compose up --build
 | Frontend | http://localhost:5173 |
 | API | http://localhost:3000 |
 | PostgreSQL | localhost:5432 |
+
+---
+
+##  Intelligent Trash & Auto-Purge
+
+| Action | Result |
+|---|---|
+| `DELETE /notes/:id` | Note moves to trash (`isDeleted: true`, `deletedAt` set) |
+| `GET /notes/trash` | Lists trashed notes with `daysRemaining` countdown |
+| `POST /notes/:id/restore` | Note restored, removed from trash |
+| `DELETE /notes/:id/trash` | Note permanently deleted immediately |
+| Auto-purge (every 24h) | Any note with `deletedAt` older than **30 days** is permanently deleted |
+
+The cleanup job runs once on server startup and then every 24 hours. A log message is printed whenever notes are purged.
+
+---
+
+## 🚀 Extended Capabilities
+
+| Capability | Details |
+|---|---|
+| **Note Tags** | Attach multiple labels; filter via `GET /notes?tag=name` |
+| **Note Pinning** | Pinned notes sort to the top; toggle via `PUT /notes/:id` with `isPinned: true` |
+| **Intelligent Trash** | 30-day retention with countdown; manual permanent delete; auto-purge every 24h |
+| **Pagination** | `?page=1&limit=20` on `GET /notes` with full pagination metadata |
+| **Full-text Search** | `GET /search?q=keyword` across owned and shared notes |
+| **Rate Limiting** | Auth: 20 req / 15 min. API: 100 req / min |
+| **Dockerized** | Full stack via `docker-compose up --build` |
 
 ---
 
@@ -167,7 +223,7 @@ All protected routes require: `Authorization: Bearer <access_token>`
 
 ---
 
-## API Reference
+##  API Reference
 
 ### Auth
 
@@ -368,35 +424,7 @@ Returns the full OpenAPI 3.0.3 specification for all endpoints.
 
 ---
 
-## Trash & Auto-Purge Behaviour
-
-| Action | Result |
-|---|---|
-| `DELETE /notes/:id` | Note moves to trash (`isDeleted: true`, `deletedAt` set) |
-| `GET /notes/trash` | Lists trashed notes with `daysRemaining` countdown |
-| `POST /notes/:id/restore` | Note restored, removed from trash |
-| `DELETE /notes/:id/trash` | Note permanently deleted immediately |
-| Auto-purge (every 24h) | Any note with `deletedAt` older than **30 days** is permanently deleted |
-
-The cleanup job runs once on server startup and then every 24 hours. A log message is printed whenever notes are purged.
-
----
-
-## Bonus Features
-
-| Feature | Details |
-|---|---|
-| **Note Tags** | Attach multiple labels; filter via `GET /notes?tag=name` |
-| **Note Pinning** | Pinned notes sort to the top; toggle via `PUT /notes/:id` with `isPinned: true` |
-| **Soft Delete & Trash** | 30-day retention with countdown; manual permanent delete; auto-purge every 24h |
-| **Pagination** | `?page=1&limit=20` on `GET /notes` with full pagination metadata |
-| **Full-text Search** | `GET /search?q=keyword` across owned and shared notes |
-| **Rate Limiting** | Auth: 20 req / 15 min. API: 100 req / min |
-| **Docker** | Full stack via `docker-compose up --build` |
-
----
-
-## Deploy to Render
+##  Deploy to Render
 
 1. Create a **PostgreSQL** database on Render — copy the external connection string
 2. Create a **Web Service** pointing to the `backend/` folder
@@ -418,11 +446,11 @@ The cleanup job runs once on server startup and then every 24 hours. A log messa
    ```bash
    node src/server.js
    ```
-6. Submit the base URL (e.g. `https://my-notes-app.render.com`). Automated tests will call endpoints like `/about`, `/login`, `/notes` directly against it.
+
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |---|---|
